@@ -1,3 +1,7 @@
+use serde_derive::{Serialize, Deserialize};
+
+pub const LOG_DIR: &str = "/var/log/portector.log";
+#[derive(Serialize, Deserialize)]
 pub struct BanParams {
     pub sequential: bool,
     pub connection_limit: usize,
@@ -14,10 +18,11 @@ impl Default for BanParams {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     pub ports: Vec<u16>,
-    pub ban_parameters: BanParams,
-    pub logging: bool
+    pub logging: bool,
+    pub ban_parameters: BanParams
 }
 
 impl Default for Config {
