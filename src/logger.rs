@@ -1,8 +1,7 @@
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::io::LineWriter;
-use std::time::SystemTime;
-use chrono::prelude::{DateTime, Utc};
+use chrono::prelude::{Local, DateTime};
 
 pub fn log_fatal(message: String) {
     log(format!("(fatal) {}", message));
@@ -27,8 +26,7 @@ fn log(line: String) {
     };
     let mut file = LineWriter::new(file);
 
-    let now = SystemTime::now();
-    let now: DateTime<Utc> = now.into();
+    let now: DateTime<Local> = Local::now();
     let now = now.to_rfc3339();
     match file.write_all(format!("[{}] {}\n", now, line).as_bytes()) {
         Ok(_) => (),
