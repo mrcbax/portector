@@ -27,7 +27,7 @@ pub fn log_aipdb(ip_addr: std::net::IpAddr, port: u16) {
     let mut file = LineWriter::new(file);
 
     let now: DateTime<Local> = Local::now();
-    let now = now.to_rfc3339();
+    let now = now.to_rfc3339_opts(chrono::SecondsFormat::Secs, false);
     match file.write_all(format!("{},\"14\",{},\"Attempted to access trap port {}\"\n", ip_addr, now, port).as_bytes()) {
         Ok(_) => (),
         Err(e) => {
