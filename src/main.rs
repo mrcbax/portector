@@ -25,11 +25,12 @@ fn main() {
     };
     let mut active_threads: Vec<std::thread::JoinHandle<()>> = vec!();
     for port in config.ports.clone() {
-        active_threads.push(socket_handler::create_listener(SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), port)));
+        active_threads.push(socket_handler::create_listener(config.clone(), SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), port)));
     }
 
     for thread in active_threads {
         _ = thread.join();
+        logger::log_error("closing thread".into());
     }
 
     println!("{}", toml::to_string_pretty(&config).unwrap());
