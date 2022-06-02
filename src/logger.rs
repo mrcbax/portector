@@ -38,22 +38,24 @@ pub fn log_aipdb(config: &super::types::Config, ip_addr: std::net::IpAddr, port:
 }
 
 fn log(config: &super::types::Config, line: String) {
-    let file = match OpenOptions::new().create(true).append(true).open(&config.log_file_path) {
-        Ok(o) => o,
-        Err(e) => {
-            eprintln!("Failed to open log file: {}", e);
-            std::process::exit(1);
-        }
-    };
-    let mut file = LineWriter::new(file);
+    if config.logging_enabled {
+        let file = match OpenOptions::new().create(true).append(true).open(&config.log_file_path) {
+            Ok(o) => o,
+            Err(e) => {
+                eprintln!("Failed to open log file: {}", e);
+                std::process::exit(1);
+            }
+        };
+        let mut file = LineWriter::new(file);
 
-    let now: DateTime<Local> = Local::now();
-    let now = now.to_rfc3339();
-    match file.write_all(format!("[{}] {}\n", now, line).as_bytes()) {
-        Ok(_) => (),
-        Err(e) => {
-            eprintln!("Failed to write to log file: {}", e);
-            std::process::exit(1);
+        let now: DateTime<Local> = Local::now();
+        let now = now.to_rfc3339();
+        match file.write_all(format!("[{}] {}\n", now, line).as_bytes()) {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("Failed to write to log file: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }

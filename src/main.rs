@@ -1,14 +1,17 @@
 use std::collections::HashMap;
 use std::env;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddrV4};
-use std::sync::{Arc,Mutex};
+use std::sync::Mutex;
 
 pub mod logger;
 pub mod socket_handler;
 pub mod table_manager;
 pub mod types;
+
+use state::Storage;
+static STATE: Storage<Mutex<HashMap<IpAddr, usize>>> = Storage::new();
 
 fn main() {
     let mut config_file: String = "/etc/portector.toml".to_string();
@@ -27,7 +30,8 @@ fn main() {
             types::Config::default()
         }
     };
-    let mut state: Arc<Mutex<HashMap<IpAddr, usize>>>= Arc::new(Mutex::new(HashMap::new()));
+    println!("{}", toml::to_string_pretty(&config).unwrap());
+    let mut state: HashMap<IpAddr, usize> = HashMap::new();
     match File::open(&config.state_file_path) {
         Ok(file_handle) => {
             let mut reader = snap::read::FrameDecoder::new(file_handle);
@@ -35,10 +39,10 @@ fn main() {
             match reader.read_to_end(&mut bytes) {
                 Ok(_) => {
                     state = match toml::from_slice(bytes.as_slice()) {
-                        Ok(o) => Arc::new(Mutex::new(o)),
+                        Ok(o) => o,
                         Err(e) => {
                             logger::log_error(&config, format!("failed to parse state file: {}", e));
-                            Arc::new(Mutex::new(HashMap::new()))
+                            HashMap::new()
                         }
                     };
                 },
@@ -47,20 +51,24 @@ fn main() {
         },
         Err(e) => logger::log_error(&config, format!("failed to open state file: {}", e))
     }
-    let shared_state = Arc::clone(&state);
+
+    STATE.set(Mutex::new(state));
     let mut active_threads: Vec<std::thread::JoinHandle<()>> = vec!();
     for port in config.ports.clone() {
-        active_threads.push(socket_handler::create_listener(config.clone(), &shared_state, SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), port)));
+        active_threads.push(socket_handler::create_listener(config.clone(), SocketAddrV4::new(Ipv4Addr::new(0, 0, 0, 0), port)));
     }
-
     for thread in active_threads {
         _ = thread.join();
         logger::log_error(&config, "closing thread".into());
     }
 
     //TODO: Handle kill signals from systemd: https://rust-cli.github.io/book/in-depth/signals.html
-    let held_state = shared_state.lock().unwrap();
-    match File::create(config.state_file_path) {
+    save_state(&config);
+}
+
+pub fn save_state(config: &types::Config) {
+    let held_state = STATE.get().lock().unwrap();
+    match OpenOptions::new().create(true).append(true).open(&config.state_file_path) {
         Ok(state_file) => {
             let mut writer = snap::write::FrameEncoder::new(state_file);
             match writer.write_all(&toml::to_string(&*held_state).unwrap().as_bytes()) {
@@ -70,5 +78,4 @@ fn main() {
         },
         Err(e) => logger::log_error(&config, format!("failed to open state file: {}", e))
     }
-    println!("{}", toml::to_string_pretty(&config).unwrap());
 }
