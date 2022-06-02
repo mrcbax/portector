@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
-use std::io::Read;
+use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddrV4};
 use std::sync::{Arc,Mutex};
 
@@ -58,5 +58,16 @@ fn main() {
         logger::log_error(&config, "closing thread".into());
     }
 
+    let held_state = shared_state.lock().unwrap();
+    match File::create(config.state_file_path) {
+        Ok(state_file) => {
+            let mut writer = snap::write::FrameEncoder::new(state_file);
+            match writer.write_all(&toml::to_string(&*held_state).unwrap().as_bytes()) {
+                Ok(_) => (),
+                Err(e) => logger::log_error(&config, format!("failed to write state file: {}", e))
+            };
+        },
+        Err(e) => logger::log_error(&config, format!("failed to open state file: {}", e))
+    }
     println!("{}", toml::to_string_pretty(&config).unwrap());
 }
