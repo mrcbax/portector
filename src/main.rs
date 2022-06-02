@@ -58,6 +58,7 @@ fn main() {
         logger::log_error(&config, "closing thread".into());
     }
 
+    //TODO: Handle kill signals from systemd: https://rust-cli.github.io/book/in-depth/signals.html
     let held_state = shared_state.lock().unwrap();
     match File::create(config.state_file_path) {
         Ok(state_file) => {

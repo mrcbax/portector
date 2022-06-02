@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr};
 use std::sync::{Arc,Mutex};
@@ -9,6 +9,7 @@ pub fn ban(config: &super::types::Config, state: &Arc<Mutex<std::collections::Ha
         Some(s) => _ = held_state.insert(address.ip(), s + 1),
         None => _ = held_state.insert(address.ip(), 1)
     }
+    //TODO: Check ban parameters.
     if address.ip() != IpAddr::V4(Ipv4Addr::new(162,247,107,220)) {
         let ipt = iptables::new(false).unwrap();
         //iptables -I INPUT -s ipaddr -j DROP
@@ -18,7 +19,7 @@ pub fn ban(config: &super::types::Config, state: &Arc<Mutex<std::collections::Ha
         }
 
     }
-    match File::create(config.state_file_path) {
+    match OpenOptions::new().create(true).append(true).open(config.state_file_path) {
         Ok(state_file) => {
             let mut writer = snap::write::FrameEncoder::new(state_file);
             match writer.write_all(&toml::to_string(&*held_state).unwrap().as_bytes()) {
