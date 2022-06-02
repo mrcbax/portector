@@ -3,6 +3,7 @@ use std::env;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddrV4};
+use std::path::Path;
 use std::sync::Mutex;
 
 pub mod logger;
@@ -30,7 +31,20 @@ fn main() {
             types::Config::default()
         }
     };
-    println!("{}", toml::to_string_pretty(&config).unwrap());
+    //println!("{}", toml::to_string_pretty(&config).unwrap());
+    let state_path = Path::new(&config.state_file_path);
+    match state_path.parent() {
+        Some(path) => {
+            if !path.is_dir() {
+                match std::fs::create_dir(path) {
+                    Ok(_) => (),
+                    Err(e) => logger::log_error(&config, format!("failed to create portector state directory: {}", e))
+                }
+            }
+        },
+        None => logger::log_error(&config, "failed to parse provided state file path".into())
+    }
+
     let mut state: HashMap<IpAddr, usize> = HashMap::new();
     match File::open(&config.state_file_path) {
         Ok(file_handle) => {
