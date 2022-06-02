@@ -1,6 +1,6 @@
 [package]
 name = "portector"
-version = "0.1.0"
+version = "0.1.0-beta"
 authors = ["Chad Baxter <cbax@doslabelectronics.com>"]
 edition = "2018"
 

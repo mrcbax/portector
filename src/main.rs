@@ -26,7 +26,7 @@ fn main() {
     let config: types::Config = match std::fs::read_to_string(config_file) {
         Ok(o) => toml::from_str(o.as_str()).unwrap(),
         Err(_) => {
-            /*logger::log_error*/println!("failed to load provided configuration file, loading default configuration");
+            /*logger::log_error*/println!("configuration file argument failed to load or did not exist, loading default configuration");
             types::Config::default()
         }
     };
