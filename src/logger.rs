@@ -3,21 +3,21 @@ use std::io::prelude::*;
 use std::io::LineWriter;
 use chrono::prelude::{Local, DateTime};
 
-pub fn log_fatal(message: String) {
-    log(format!("(fatal) {}", message));
+pub fn log_fatal(config: &super::types::Config, message: String) {
+    log(config, format!("(fatal) {}", message));
     std::process::exit(1);
 }
 
-pub fn log_error(message: String) {
-    log(format!("(error) {}", message));
+pub fn log_error(config: &super::types::Config, message: String) {
+    log(config, format!("(error) {}", message));
 }
 
-pub fn log_notice(message: String) {
-    log(format!("(notice) {}", message));
+pub fn log_notice(config: &super::types::Config, message: String) {
+    log(config, format!("(notice) {}", message));
 }
 
-pub fn log_aipdb(ip_addr: std::net::IpAddr, port: u16) {
-    let file = match OpenOptions::new().create(true).append(true).open(super::types::AIPDB_LOG_FILE) {
+pub fn log_aipdb(config: &super::types::Config, ip_addr: std::net::IpAddr, port: u16) {
+    let file = match OpenOptions::new().create(true).append(true).open(&config.aipdb_log_file_path) {
         Ok(o) => o,
         Err(e) => {
             eprintln!("Failed to open log file: {}", e);
@@ -37,8 +37,8 @@ pub fn log_aipdb(ip_addr: std::net::IpAddr, port: u16) {
     }
 }
 
-fn log(line: String) {
-    let file = match OpenOptions::new().create(true).append(true).open(super::types::LOG_FILE) {
+fn log(config: &super::types::Config, line: String) {
+    let file = match OpenOptions::new().create(true).append(true).open(&config.log_file_path) {
         Ok(o) => o,
         Err(e) => {
             eprintln!("Failed to open log file: {}", e);
