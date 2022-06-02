@@ -1,13 +1,14 @@
+#list of ports to setup trap listeners on:
 ports = [1,7,9,11,15,17,69,70,79,88,109,110,111,113,119,135,138,139,143,179,201,389,464,512,513,514,515,540,554,
          635,1080,1311,1337,1524,2001,2222,2049,2967,4001,5742,6001,6667,8080,8081,8088,8443,8888,12345,12346,
          20034,30303,32771,32772,32773,32774,31337,40421,40425,49724,54320]
-logging_enabled = true
-log_as_aipdb = true
-log_file_path = '/var/log/portector.log'
-aipdb_log_file_path = '/var/log/portector.aipdb.log'
-state_file_path = '/var/lib/portector/state.stdb'
-ip_whitelist = ['127.0.0.1']
+logging_enabled = true #enable/disable logging
+log_as_aipdb = false #enable/disable abuseipdb logging of trap port hits.
+log_file_path = '/var/log/portector.log' #path to store the portector logs
+aipdb_log_file_path = '/var/log/portector.aipdb.log' #path to store the abuseipdb formated log file
+state_file_path = '/var/lib/portector/state.stdb' #path to store the current ban counts
+ip_whitelist = ['127.0.0.1'] #IPs you'd like to prevent from being banned
 
 [ban_parameters]
-hits_before_ban = 5
-ban_time = 30
+hits_before_ban = 5 #number of times an IP touches a trap port before being banned
+ban_time = 30 #not yet implemented (will remove banned IPs from iptables after x amount of time)

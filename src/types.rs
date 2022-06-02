@@ -34,7 +34,7 @@ impl Default for Config {
         return Config {
             ports: ports,
             logging_enabled: true,
-            log_as_aipdb: true,
+            log_as_aipdb: false,
             log_file_path: "/var/log/portector.log".into(),
             aipdb_log_file_path: "/var/log/portector.aipdb.log".into(),
             state_file_path: "/var/lib/portector/state.stdb".into(),
