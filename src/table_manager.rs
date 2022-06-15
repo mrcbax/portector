@@ -30,5 +30,5 @@ pub fn ban(config: &super::types::Config, address: std::net::SocketAddr) {
         Err(e) => super::logger::log_error(&config, format!("failed to open state file: {}", e))
     }
 
-    println!("{}", toml::to_string_pretty(&*held_state).unwrap());
+    //println!("{}", toml::to_string_pretty(&*held_state).unwrap());
 }
